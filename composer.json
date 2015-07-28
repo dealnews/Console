@@ -1,0 +1,25 @@
+{
+    "name": "dealnews/console",
+    "type": "library",
+    "description": "Utilities for creating console applications",
+    "keywords": ["getopt","pid","status"],
+    "homepage": "https://github.com/dealnews/Console",
+    "license": "BSD",
+    "authors": [
+        {
+            "name": "Brian Moon",
+            "email": "brianm@dealnews.com",
+            "homepage": "http://dealnews.com/",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=5.5.0",
+        "ext-date": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "DealNews\\Console\\": "src/"
+        }
+    }
+}
