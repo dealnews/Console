@@ -183,24 +183,26 @@ class Console {
             self::$verbosity = self::VERBOSITY_QUIET;
         } elseif (isset($this->opts["v"])) {
             self::$verbosity = self::VERBOSITY_VERBOSE;
-            if (is_array($this->opts["v"])) {
-                $level = count($this->opts["v"]);
-            } else {
-                $level = 1;
-            }
-            switch ($level) {
-                case 1:
-                    self::$verbosity = self::VERBOSITY_NORMAL;
-                    break;
-                case 2:
-                    self::$verbosity = self::VERBOSITY_VERBOSE;
-                    break;
-                case 3:
-                    self::$verbosity = self::VERBOSITY_INFO;
-                    break;
-                default:
-                    self::$verbosity = self::VERBOSITY_DEBUG;
-                    break;
+            if (!is_bool($this->opts["v"])) {
+                if (is_array($this->opts["v"])) {
+                    $level = count($this->opts["v"]);
+                } else {
+                    $level = strlen($this->opts["v"]) + 1;
+                }
+                switch ($level) {
+                    case 1:
+                        self::$verbosity = self::VERBOSITY_NORMAL;
+                        break;
+                    case 2:
+                        self::$verbosity = self::VERBOSITY_VERBOSE;
+                        break;
+                    case 3:
+                        self::$verbosity = self::VERBOSITY_INFO;
+                        break;
+                    default:
+                        self::$verbosity = self::VERBOSITY_DEBUG;
+                        break;
+                }
             }
         }
 
