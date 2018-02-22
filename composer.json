@@ -4,7 +4,7 @@
     "description": "Utilities for creating console applications",
     "keywords": ["getopt","pid","status"],
     "homepage": "https://github.com/dealnews/Console",
-    "license": "BSD",
+    "license": "BSD-3-Clause",
     "authors": [
         {
             "name": "Brian Moon",
