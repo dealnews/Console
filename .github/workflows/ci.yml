@@ -10,10 +10,6 @@ jobs:
     strategy:
       matrix:
         php-versions: ['8.2', '8.3', '8.4']
-        include:
-          - operating-system: 'ubuntu-latest'
-            php-versions: '8.2'
-            phpunit-versions: 11
     steps:
 
     - name: Checkout
