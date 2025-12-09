@@ -356,9 +356,9 @@ class Console {
     /**
      * Wrapper around getopt to make testing easier
      *
-     * @param string $short_opts
-     * @param array  $long_opts
-     * @return array|false
+     * @param string $short_opts Short options string for getopt (e.g. "ab:c::")
+     * @param array  $long_opts  Array of long options for getopt (e.g. ["alpha", "beta:", "charlie::"])
+     * @return array|false Parsed options array or false on failure
      */
     protected function realGetopt(string $short_opts, array $long_opts): array|false {
         return getopt($short_opts, $long_opts);
