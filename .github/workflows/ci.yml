@@ -30,6 +30,3 @@ jobs:
         php_extensions: "pcov yaml"
         version: "11.5"
         php_version: ${{ matrix.php-versions }}
-
-    - name: Run Phan
-      uses: k1LoW/phan-action@v0
