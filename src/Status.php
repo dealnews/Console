@@ -137,7 +137,8 @@ class Status {
      *
      * @return string
      */
-    public static function relativeDate($start, $end) {
+    public static function relativeDate($start, $end)
+    {
         $start = (int)$start;
         $end = (int)$end;
 
