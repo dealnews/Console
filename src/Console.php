@@ -341,7 +341,7 @@ class Console {
     {
         list($short_opts, $long_opts) = $this->buildGetopts($options);
 
-        $opts = getopt(implode("", $short_opts), $long_opts);
+        $opts = $this->realGetopt(implode("", $short_opts), $long_opts);
         // getopt() sets options that don't take a parameter to false
         // this can create some confusing issues. So, set any truly
         // false values to true instead
@@ -351,6 +351,17 @@ class Console {
             }
         }
         return $opts;
+    }
+
+    /**
+     * Wrapper around getopt to make testing easier
+     *
+     * @param string $short_opts
+     * @param array  $long_opts
+     * @return array|false
+     */
+    protected function realGetopt(string $short_opts, array $long_opts): array|false {
+        return getopt($short_opts, $long_opts);
     }
 
     /**
@@ -638,7 +649,7 @@ class Console {
             $pid_file = $this->pid_file;
         }
 
-        $sucess = false;
+        $success = false;
 
         if (empty($pid_file)) {
             if (self::$verbosity != self::VERBOSITY_QUIET) {
@@ -657,10 +668,6 @@ class Console {
                     if (self::$verbosity == self::VERBOSITY_DEBUG) {
                         echo "Removed PID file $pid_file\n";
                     }
-                }
-            } else {
-                if (self::$verbosity != self::VERBOSITY_QUIET) {
-                    trigger_error("PID file $pid_file not found.", E_USER_NOTICE);
                 }
             }
         }

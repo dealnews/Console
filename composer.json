@@ -9,17 +9,26 @@
         {
             "name": "Brian Moon",
             "email": "brianm@dealnews.com",
-            "homepage": "http://dealnews.com/",
+            "homepage": "https://www.dealnews.com/",
             "role": "Developer"
         }
     ],
     "require": {
-        "php": ">=5.5.0",
-        "ext-date": "*"
+        "php": "^8.2",
+        "ext-date": "*",
+        "psr/log": "^3.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.5"
     },
     "autoload": {
         "psr-4": {
             "DealNews\\Console\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "DealNews\\Console\\Tests\\": "tests/"
         }
     }
 }
