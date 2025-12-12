@@ -644,12 +644,12 @@ class LoggerTest extends TestCase {
      */
     public function testOnlyUsedPlaceholdersExcludedFromJson(): void {
         $this->console_mock
-             ->expects($this->once())
-             ->method('write')
-             ->with(
-                 '[ERROR    ] Error code 404 {"unused":"value","another":"context"}',
-                 $this->anything()
-             );
+            ->expects($this->once())
+            ->method('write')
+            ->with(
+                '[ERROR    ] Error code 404 {"unused":"value","another":"context"}',
+                $this->anything()
+            );
 
         $this->logger->error(
             'Error code {code}',
