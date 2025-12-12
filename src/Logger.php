@@ -196,17 +196,25 @@ class Logger implements LoggerInterface {
      * @param string|\Stringable $message Log message
      * @param array              $context Context array for interpolation
      *
-     * @return string Formatted message with level prefix
+     * @return string Formatted message with level prefix and remaining context as JSON
      */
     protected function formatMessage(
         string $level,
         string|\Stringable $message,
         array $context
     ): string {
-        $interpolated = $this->interpolate((string)$message, $context);
-        $padded_level = str_pad(strtoupper($level), self::LEVEL_PAD_LENGTH);
+        $interpolation_result = $this->interpolate((string)$message, $context);
+        $padded_level         = str_pad(strtoupper($level), self::LEVEL_PAD_LENGTH);
+        $formatted            = "[{$padded_level}] {$interpolation_result['message']}";
+        
+        $remaining_context = array_diff_key($context, array_flip($interpolation_result['used_keys']));
+        $context_json      = $this->formatContext($remaining_context);
+        
+        if ($context_json !== '') {
+            $formatted .= ' ' . $context_json;
+        }
 
-        return "[{$padded_level}] {$interpolated}";
+        return $formatted;
     }
 
     /**
@@ -218,19 +226,52 @@ class Logger implements LoggerInterface {
      * @param string $message Message with optional {placeholder} tokens
      * @param array  $context Key-value pairs for replacement
      *
-     * @return string Interpolated message
+     * @return array{message: string, used_keys: array<string>} Interpolated message and used keys
      */
-    protected function interpolate(string $message, array $context): string {
+    protected function interpolate(string $message, array $context): array {
         $replacements = [];
+        $used_keys    = [];
 
         foreach ($context as $key => $value) {
+            $placeholder = '{' . $key . '}';
+            
+            if (!str_contains($message, $placeholder)) {
+                continue;
+            }
+            
             if (is_string($value) || (is_object($value) && method_exists($value, '__toString'))) {
-                $replacements['{' . $key . '}'] = (string)$value;
+                $replacements[$placeholder] = (string)$value;
+                $used_keys[]                = $key;
             } elseif (is_scalar($value)) {
-                $replacements['{' . $key . '}'] = (string)$value;
+                $replacements[$placeholder] = (string)$value;
+                $used_keys[]                = $key;
             }
         }
 
-        return strtr($message, $replacements);
+        return [
+            'message'   => strtr($message, $replacements),
+            'used_keys' => $used_keys,
+        ];
+    }
+
+    /**
+     * Formats context array as JSON string
+     *
+     * @param array $context Context array to encode
+     *
+     * @return string JSON-encoded context or empty string if context is empty
+     */
+    protected function formatContext(array $context): string {
+        if (empty($context)) {
+            return '';
+        }
+
+        $json = json_encode($context, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        
+        if ($json === false) {
+            return '';
+        }
+
+        return $json;
     }
 }

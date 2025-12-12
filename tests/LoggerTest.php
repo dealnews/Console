@@ -226,7 +226,7 @@ class LoggerTest extends TestCase {
     }
 
     /**
-     * Tests that non-stringable values in context are ignored
+     * Tests that non-stringable values cannot be interpolated but are included in JSON context
      *
      * @return void
      */
@@ -235,7 +235,7 @@ class LoggerTest extends TestCase {
             ->expects($this->once())
             ->method('write')
             ->with(
-                '[INFO     ] Array value: {arr}',
+                '[INFO     ] Array value: {arr} {"arr":["nested","array"]}',
                 $this->anything()
             );
 
@@ -467,5 +467,197 @@ class LoggerTest extends TestCase {
             );
 
         $this->logger->info($message);
+    }
+
+    /**
+     * Tests that context not used for interpolation is appended as JSON
+     *
+     * @return void
+     */
+    public function testRemainingContextAppendedAsJson(): void {
+        $this->console_mock
+             ->expects($this->once())
+             ->method('write')
+             ->with(
+                 '[ERROR    ] User 123 failed {"ip":"1.2.3.4","attempt":3}',
+                 $this->anything()
+             );
+
+        $this->logger->error(
+            'User {user_id} failed',
+            [
+                'user_id' => 123,
+                'ip'      => '1.2.3.4',
+                'attempt' => 3,
+            ]
+        );
+    }
+
+    /**
+     * Tests that fully interpolated context produces no JSON suffix
+     *
+     * @return void
+     */
+    public function testFullyInterpolatedContextProducesNoJson(): void {
+        $this->console_mock
+             ->expects($this->once())
+             ->method('write')
+             ->with(
+                 '[INFO     ] User 123 logged in from 1.2.3.4',
+                 $this->anything()
+             );
+
+        $this->logger->info(
+            'User {user_id} logged in from {ip}',
+            [
+                'user_id' => 123,
+                'ip'      => '1.2.3.4',
+            ]
+        );
+    }
+
+    /**
+     * Tests that context with no placeholders is fully appended as JSON
+     *
+     * @return void
+     */
+    public function testContextWithoutPlaceholdersAppendedAsJson(): void {
+        $this->console_mock
+             ->expects($this->once())
+             ->method('write')
+             ->with(
+                 '[WARNING  ] System alert {"severity":"high","code":500}',
+                 $this->anything()
+             );
+
+        $this->logger->warning(
+            'System alert',
+            [
+                'severity' => 'high',
+                'code'     => 500,
+            ]
+        );
+    }
+
+    /**
+     * Tests that nested arrays in context are properly JSON-encoded
+     *
+     * @return void
+     */
+    public function testNestedArraysInContextEncodedAsJson(): void {
+        $this->console_mock
+             ->expects($this->once())
+             ->method('write')
+             ->with(
+                 '[ERROR    ] Database error {"query":"SELECT * FROM users","params":["foo","bar"],"error":{"code":1045,"message":"Access denied"}}',
+                 $this->anything()
+             );
+
+        $this->logger->error(
+            'Database error',
+            [
+                'query'  => 'SELECT * FROM users',
+                'params' => ['foo', 'bar'],
+                'error'  => [
+                    'code'    => 1045,
+                    'message' => 'Access denied',
+                ],
+            ]
+        );
+    }
+
+    /**
+     * Tests that special characters are properly handled in JSON output
+     *
+     * @return void
+     */
+    public function testSpecialCharactersInJsonContext(): void {
+        $this->console_mock
+             ->expects($this->once())
+             ->method('write')
+             ->with(
+                 '[INFO     ] Processing file {"path":"/home/user/file.txt","content":"Line 1\nLine 2"}',
+                 $this->anything()
+             );
+
+        $this->logger->info(
+            'Processing file',
+            [
+                'path'    => '/home/user/file.txt',
+                'content' => "Line 1\nLine 2",
+            ]
+        );
+    }
+
+    /**
+     * Tests that Unicode characters are not escaped in JSON output
+     *
+     * @return void
+     */
+    public function testUnicodeInJsonContext(): void {
+        $this->console_mock
+             ->expects($this->once())
+             ->method('write')
+             ->with(
+                 '[INFO     ] User action {"name":"José","action":"café"}',
+                 $this->anything()
+             );
+
+        $this->logger->info(
+            'User action',
+            [
+                'name'   => 'José',
+                'action' => 'café',
+            ]
+        );
+    }
+
+    /**
+     * Tests mixed scenario with some context interpolated and some appended
+     *
+     * @return void
+     */
+    public function testMixedInterpolationAndJsonContext(): void {
+        $this->console_mock
+             ->expects($this->once())
+             ->method('write')
+             ->with(
+                 '[WARNING  ] Failed login attempt for user admin {"ip":"192.168.1.1","attempt":5,"locked":true}',
+                 $this->anything()
+             );
+
+        $this->logger->warning(
+            'Failed login attempt for user {username}',
+            [
+                'username' => 'admin',
+                'ip'       => '192.168.1.1',
+                'attempt'  => 5,
+                'locked'   => true,
+            ]
+        );
+    }
+
+    /**
+     * Tests that only used placeholders are excluded from JSON context
+     *
+     * @return void
+     */
+    public function testOnlyUsedPlaceholdersExcludedFromJson(): void {
+        $this->console_mock
+             ->expects($this->once())
+             ->method('write')
+             ->with(
+                 '[ERROR    ] Error code 404 {"unused":"value","another":"context"}',
+                 $this->anything()
+             );
+
+        $this->logger->error(
+            'Error code {code}',
+            [
+                'code'    => 404,
+                'unused'  => 'value',
+                'another' => 'context',
+            ]
+        );
     }
 }
